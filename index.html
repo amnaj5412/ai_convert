@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Multi-Converter (Production)</title>
+    <title>AI Smart Multi-Converter (Debug Mode)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -14,7 +14,7 @@
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800">
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
 
     <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
@@ -26,35 +26,35 @@
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-2xl">
-        <div class="grid grid-cols-1 gap-4 mb-6">
-            <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-indigo-50 text-center">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="relative">
-                        <div id="recordRing" class="absolute -inset-3 bg-rose-100 rounded-full hidden"></div>
-                        <button id="recordBtn" class="relative w-24 h-24 bg-rose-500 hover:bg-rose-600 text-white rounded-full shadow-2xl flex flex-col items-center justify-center transition-all active:scale-95 z-10">
-                            <i id="micIcon" class="fas fa-microphone text-3xl mb-1"></i>
-                            <span id="timerDisplay" class="text-[10px] font-mono">00:00</span>
-                        </button>
-                    </div>
-                    <div class="flex gap-3 w-full">
-                        <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-indigo-50 text-indigo-700 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors">
-                            <i class="fas fa-camera"></i> ถ่ายรูป/อัปโหลด
-                        </button>
-                        <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,audio/*">
-                    </div>
+        <!-- Input Section -->
+        <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-indigo-50 text-center mb-6">
+            <div class="flex flex-col items-center gap-6">
+                <div class="relative">
+                    <div id="recordRing" class="absolute -inset-3 bg-rose-100 rounded-full hidden"></div>
+                    <button id="recordBtn" class="relative w-24 h-24 bg-rose-500 hover:bg-rose-600 text-white rounded-full shadow-2xl flex flex-col items-center justify-center transition-all active:scale-95 z-10">
+                        <i id="micIcon" class="fas fa-microphone text-3xl mb-1"></i>
+                        <span id="timerDisplay" class="text-[10px] font-mono">00:00</span>
+                    </button>
                 </div>
-                <p id="instructionText" class="mt-4 text-[10px] text-slate-400 font-semibold uppercase">แตะเพื่อเริ่มบันทึกเสียง หรือเลือกรูปตาราง</p>
+                <div class="flex gap-3 w-full">
+                    <button onclick="document.getElementById('fileInput').click()" class="flex-1 bg-indigo-50 text-indigo-700 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-indigo-100 transition-colors">
+                        <i class="fas fa-camera"></i> ถ่ายรูป/อัปโหลด
+                    </button>
+                    <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,audio/*">
+                </div>
             </div>
+            <p id="instructionText" class="mt-4 text-[10px] text-slate-400 font-semibold uppercase">แตะเพื่อเริ่มบันทึกเสียง หรือเลือกรูปตาราง</p>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-2xl border border-indigo-50 overflow-hidden">
+        <!-- Result Section -->
+        <div class="bg-white rounded-[2rem] shadow-2xl border border-indigo-50 overflow-hidden mb-6">
             <div class="flex justify-between items-center p-5 border-b border-slate-50">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <i class="fas fa-file-invoice"></i> ผลลัพธ์ที่ถอดได้
                 </h3>
                 <div class="flex gap-2">
-                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full active:scale-90 transition-transform">คัดลอก</button>
-                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full active:scale-90 transition-transform">ล้าง</button>
+                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full">คัดลอก</button>
+                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full">ล้าง</button>
                 </div>
             </div>
 
@@ -63,48 +63,61 @@
                 <p class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังวิเคราะห์ข้อมูล...</p>
             </div>
 
-            <div class="relative">
-                <textarea id="resultOutput" readonly class="w-full h-96 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono" placeholder="ผลลัพธ์จะแสดงที่นี่..."></textarea>
-            </div>
+            <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono" placeholder="ผลลัพธ์จะแสดงที่นี่..."></textarea>
         </div>
 
-        <!-- กล่องแสดง Error แบบละเอียด -->
-        <div id="errorDisplay" class="hidden mt-4 p-4 bg-rose-50 text-rose-600 text-[10px] rounded-xl font-mono border border-rose-100 overflow-x-auto"></div>
+        <!-- Debug Log Section (New!) -->
+        <div class="bg-slate-800 rounded-2xl p-4 shadow-inner">
+            <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between">
+                <span><i class="fas fa-terminal mr-1"></i> Debug Log</span>
+                <span id="logTime" class="opacity-50"></span>
+            </h4>
+            <div id="debugLog" class="text-[10px] text-green-400 font-mono h-32 overflow-y-auto custom-scrollbar leading-relaxed">
+                > ระบบพร้อมทำงาน... กรุณาเลือกไฟล์
+            </div>
+        </div>
     </main>
 
     <script>
-        // --- ใส่ API Key ของคุณที่นี่ ---
+        // ใส่ API Key ที่คุณได้รับมา
         const apiKey = "AIzaSyBwybJiW4sSuU9n_3PR7eVnur_qoHJL-8Q"; 
-        // ----------------------------
 
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
         let timerInterval;
 
+        function addLog(msg, type = 'info') {
+            const logDiv = document.getElementById('debugLog');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'text-rose-400' : 'text-green-400';
+            logDiv.innerHTML += `<div class="${color}">[${time}] ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
         async function processMedia(base64Data, mimeType) {
-            const errorDisplay = document.getElementById('errorDisplay');
             const resultOutput = document.getElementById('resultOutput');
             
-            if (!apiKey || apiKey.length < 10) {
-                showError("API Key ไม่ถูกต้องหรือยังไม่ได้ระบุ");
-                return;
-            }
-
             setLoading(true);
-            errorDisplay.classList.add('hidden');
             resultOutput.value = "";
+            addLog(`เริ่มการประมวลผล (Mime: ${mimeType}, Size: ${Math.round(base64Data.length/1024)}KB)`);
             
+            // ใช้ Model ล่าสุดที่เสถียร
             const modelName = "gemini-1.5-flash";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [{ 
                     parts: [
-                        { text: "สกัดข้อมูลจากไฟล์ที่แนบมา: หากเป็นรูปภาพตารางให้ถอดข้อมูลออกมาเป็น Markdown Table อย่างแม่นยำ, หากเป็นเสียงพูดให้ถอดความเป็นข้อความภาษาไทย, หากเป็นเอกสารทั่วไปให้สกัดข้อความทั้งหมด ห้ามสรุปความ" },
+                        { text: "จงสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
                         { inlineData: { mimeType: mimeType, data: base64Data } }
                     ] 
                 }],
+                generationConfig: {
+                    temperature: 0.1,
+                    topP: 0.95,
+                    maxOutputTokens: 8192,
+                },
                 safetySettings: [
                     { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
                     { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
@@ -114,6 +127,7 @@
             };
 
             try {
+                addLog("กำลังส่งคำขอไปยัง Google API...");
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -123,20 +137,23 @@
                 const data = await response.json();
 
                 if (!response.ok) {
+                    addLog(`API ตอบกลับด้วย Error: ${data.error?.message || response.status}`, 'error');
                     throw new Error(data.error?.message || `HTTP Error ${response.status}`);
                 }
 
-                // ตรวจสอบว่ามีข้อมูลกลับมาหรือไม่
                 if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-                    resultOutput.value = data.candidates[0].content.parts[0].text;
+                    const text = data.candidates[0].content.parts[0].text;
+                    resultOutput.value = text;
+                    addLog("ประมวลผลสำเร็จ! พบข้อความ " + text.length + " ตัวอักษร");
                 } else {
-                    // กรณี AI ไม่สามารถสกัดข้อความได้ หรือโดนบล็อก
-                    throw new Error("AI ประมวลผลสำเร็จแต่ไม่มีข้อความส่งกลับมา (อาจเกิดจากไฟล์ไม่ชัดเจนหรือระบบความปลอดภัยบล็อกเนื้อหา)");
+                    const reason = data.candidates?.[0]?.finishReason || "UNKNOWN";
+                    addLog(`AI ไม่ส่งข้อความกลับมา (FinishReason: ${reason})`, 'error');
+                    resultOutput.value = "AI ประมวลผลสำเร็จแต่ไม่มีข้อความส่งกลับมา (Reason: " + reason + ")";
                 }
 
             } catch (err) {
-                showError(`[พบข้อผิดพลาด] ${err.message}`);
-                console.error("Full API Error:", err);
+                addLog(`ข้อผิดพลาด: ${err.message}`, 'error');
+                resultOutput.value = "เกิดข้อผิดพลาด: " + err.message;
             } finally {
                 setLoading(false);
             }
@@ -161,18 +178,23 @@
                     startTimer();
                     isRecording = true;
                     updateUI(true);
-                } catch (e) { showError("ไม่สามารถเข้าถึงไมโครโฟนได้: โปรดตรวจสอบว่าเว็บรองรับ HTTPS"); }
+                    addLog("เริ่มบันทึกเสียง...");
+                } catch (e) { 
+                    addLog("เข้าถึงไมโครโฟนไม่ได้: " + e.message, 'error');
+                }
             } else {
-                if(mediaRecorder) mediaRecorder.stop();
+                mediaRecorder.stop();
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
+                addLog("หยุดบันทึกเสียง ส่งไปประมวลผล...");
             }
         };
 
         document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            addLog(`เลือกไฟล์: ${file.name} (${file.type})`);
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => processMedia(reader.result.split(',')[1], file.type);
@@ -180,7 +202,7 @@
 
         document.getElementById('clearBtn').onclick = () => {
             document.getElementById('resultOutput').value = "";
-            document.getElementById('errorDisplay').classList.add('hidden');
+            addLog("ล้างหน้าจอผลลัพธ์");
         };
 
         function startTimer() {
@@ -202,17 +224,12 @@
             document.getElementById('micIcon').className = r ? "fas fa-stop text-3xl mb-1" : "fas fa-microphone text-3xl mb-1";
             document.getElementById('statusBadge').innerText = r ? "RECORDING" : "READY";
         }
-        function showError(m) {
-            const errDiv = document.getElementById('errorDisplay');
-            errDiv.innerText = m;
-            errDiv.classList.remove('hidden');
-        }
         document.getElementById('copyBtn').onclick = () => {
             const out = document.getElementById('resultOutput');
             if(!out.value) return;
             out.select();
             document.execCommand('copy');
-            alert("คัดลอกลงคลิปบอร์ดแล้ว");
+            addLog("คัดลอกข้อความลงคลิปบอร์ดแล้ว");
         };
     </script>
 </body>
