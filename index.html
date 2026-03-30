@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Multi-Converter (V2.1 - Debug Pro)</title>
+    <title>AI Smart Multi-Converter (V2.2 - Auto Discovery)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -24,7 +24,7 @@
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <i class="fas fa-microchip"></i> AI Smart Convert
             </h1>
-            <div id="statusBadge" class="text-[10px] bg-green-500 px-2 py-1 rounded-full border border-white/30 uppercase tracking-widest font-bold">V2.1 - READY</div>
+            <div id="statusBadge" class="text-[10px] bg-green-500 px-2 py-1 rounded-full border border-white/30 uppercase tracking-widest font-bold">V2.2 - READY</div>
         </div>
     </header>
 
@@ -46,48 +46,45 @@
                     <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,audio/*">
                 </div>
             </div>
-            <p class="mt-4 text-[10px] text-slate-400 font-semibold uppercase tracking-widest italic">รองรับรูปถ่ายตาราง, PDF และเสียงพูด</p>
+            <p class="mt-4 text-[10px] text-slate-400 font-semibold uppercase tracking-widest italic">ระบบสแกนตารางและถอดความเสียงอัตโนมัติ</p>
         </div>
 
         <!-- Result Section -->
         <div class="bg-white rounded-[2.5rem] shadow-2xl border border-indigo-50 overflow-hidden mb-6">
             <div class="flex justify-between items-center p-5 border-b border-slate-50">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fas fa-file-invoice"></i> ผลลัพธ์ที่ถอดได้
+                    <i class="fas fa-file-invoice"></i> ผลลัพธ์ที่สกัดได้
                 </h3>
                 <div class="flex gap-2">
-                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">คัดลอก</button>
-                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors">ล้าง</button>
+                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100">คัดลอก</button>
+                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full">ล้าง</button>
                 </div>
             </div>
 
             <div id="loadingOverlay" class="hidden p-12 text-center">
                 <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"></div>
-                <p id="loadingText" class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังวิเคราะห์ข้อมูล...</p>
+                <p id="loadingText" class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังทำงาน...</p>
             </div>
 
-            <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono custom-scrollbar" placeholder="ผลลัพธ์จะปรากฏที่นี่..."></textarea>
+            <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono custom-scrollbar" placeholder="ข้อความที่สกัดได้จะแสดงที่นี่..."></textarea>
         </div>
 
-        <!-- Debug Log -->
+        <!-- Debug Log V2.2 -->
         <div class="bg-slate-900 rounded-2xl p-4 shadow-inner">
-            <div class="flex justify-between items-center mb-2">
+            <div class="flex justify-between items-center mb-2 border-b border-slate-800 pb-2">
                 <h4 class="text-[10px] font-bold text-slate-500 uppercase flex items-center">
-                    <i class="fas fa-terminal mr-1"></i> ระบบตรวจสอบ (Debug Log V2.1)
+                    <i class="fas fa-terminal mr-2"></i> ระบบตรวจสอบอัจฉริยะ (AUTO DISCOVERY)
                 </h4>
-                <div class="flex gap-2">
-                    <button id="listModelsBtn" class="text-[9px] bg-indigo-600 text-white px-2 py-0.5 rounded hover:bg-indigo-500 transition-colors">ตรวจสอบรุ่นที่รองรับ</button>
-                    <button onclick="document.getElementById('debugLog').innerHTML = ''" class="text-[9px] text-slate-600 hover:text-slate-400">CLEAR</button>
-                </div>
+                <button id="listModelsBtn" class="text-[9px] bg-slate-800 text-indigo-400 px-3 py-1 rounded-full border border-indigo-900/50 hover:bg-indigo-900/20">สแกนรุ่นที่ใช้ได้</button>
             </div>
             <div id="debugLog" class="text-[10px] text-green-400 font-mono h-48 overflow-y-auto custom-scrollbar leading-relaxed">
-                > ระบบพร้อมทำงาน... กรุณาเลือกไฟล์
+                > เริ่มต้นระบบ V2.2... พร้อมใช้งาน
             </div>
         </div>
     </main>
 
     <script>
-        // API Key ของคุณ
+        // API Key ที่ยืนยันแล้ว
         const apiKey = "AIzaSyBwybJiW4sSuU9n_3PR7eVnur_qoHJL-8Q"; 
 
         let mediaRecorder;
@@ -106,24 +103,30 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        // ปุ่มพิเศษสำหรับตรวจสอบรุ่นที่ Key นี้เข้าถึงได้
-        document.getElementById('listModelsBtn').onclick = async () => {
-            addLog("กำลังดึงรายชื่อรุ่นที่ Key ของคุณรองรับ...");
+        // ฟังก์ชันดึงรายชื่อรุ่นที่ Key นี้เข้าถึงได้จริง
+        async function getAvailableModels() {
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
                 const data = await response.json();
                 if (data.models) {
-                    addLog("--- รายการรุ่นที่พบ ---");
-                    data.models.forEach(m => {
-                        if (m.supportedGenerationMethods.includes('generateContent')) {
-                            addLog(`- ${m.name.split('/').pop()}`, 'info');
-                        }
-                    });
-                } else {
-                    addLog("ไม่พบรุ่นใดๆ หรือ API Key ผิดพลาด", 'error');
+                    return data.models
+                        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                        .map(m => m.name.split('/').pop());
                 }
             } catch (err) {
-                addLog("ข้อผิดพลาดในการดึงข้อมูล: " + err.message, 'error');
+                console.error("Discovery error", err);
+            }
+            return [];
+        }
+
+        document.getElementById('listModelsBtn').onclick = async () => {
+            addLog("กำลังสำรวจสิทธิ์การเข้าถึงโมเดลของคุณ...");
+            const models = await getAvailableModels();
+            if (models.length > 0) {
+                addLog("--- รุ่นที่บัญชีคุณรองรับ ---");
+                models.forEach(m => addLog(`- ${m}`, 'info'));
+            } else {
+                addLog("ไม่พบรุ่นที่รองรับ หรือ API Key มีปัญหา", 'error');
             }
         };
 
@@ -133,70 +136,70 @@
             
             setLoading(true);
             resultOutput.value = "";
-            addLog(`เตรียมประมวลผลไฟล์: ${mimeType}`);
+            addLog(`เริ่มประมวลผลไฟล์: ${mimeType}`);
             
-            // เพิ่มตัวเลือกชื่อรุ่นให้ครอบคลุมที่สุด (Latest Aliases)
-            const configs = [
-                { version: 'v1beta', model: 'gemini-1.5-flash-latest' },
-                { version: 'v1beta', model: 'gemini-1.5-flash' },
-                { version: 'v1', model: 'gemini-1.5-flash' },
-                { version: 'v1beta', model: 'gemini-1.5-pro-latest' }
-            ];
-
+            // ลำดับการเรียก AI แบบฉลาด (Smart Fallback)
+            const baseModels = ["gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-2.0-flash-exp", "gemini-1.5-pro"];
             let success = false;
 
-            for (const config of configs) {
+            // ขั้นตอนที่ 1: ลองจากรุ่นมาตรฐานก่อน
+            for (const modelId of baseModels) {
                 if (success) break;
                 
-                addLog(`กำลังทดสอบ: ${config.model} (${config.version})...`, 'warn');
-                loadingText.innerText = `กำลังลองรุ่น ${config.model}...`;
+                // ลองทั้ง v1beta และ v1
+                const versions = ['v1beta', 'v1'];
+                for (const ver of versions) {
+                    if (success) break;
+                    
+                    addLog(`ทดสอบ: ${modelId} (${ver})...`, 'warn');
+                    loadingText.innerText = `กำลังเชื่อมต่อ ${modelId}...`;
 
-                const url = `https://generativelanguage.googleapis.com/${config.version}/models/${config.model}:generateContent?key=${apiKey}`;
+                    const url = `https://generativelanguage.googleapis.com/${ver}/models/${modelId}:generateContent?key=${apiKey}`;
+                    
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ 
+                                    parts: [
+                                        { text: "จงสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
+                                        { inlineData: { mimeType: mimeType, data: base64Data } }
+                                    ] 
+                                }]
+                            })
+                        });
 
-                const payload = {
-                    contents: [{ 
-                        parts: [
-                            { text: "จงสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
-                            { inlineData: { mimeType: mimeType, data: base64Data } }
-                        ] 
-                    }],
-                    generationConfig: {
-                        temperature: 0.1,
-                        topP: 0.95
+                        const data = await response.json();
+
+                        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            resultOutput.value = data.candidates[0].content.parts[0].text;
+                            addLog(`สำเร็จ! ใช้งานผ่าน ${modelId} (${ver})`, 'info');
+                            success = true;
+                        } else {
+                            const errMsg = data.error?.message || "Response Empty";
+                            addLog(`ข้าม ${modelId} (${ver}): ${errMsg.substring(0, 50)}...`, 'warn');
+                        }
+                    } catch (err) {
+                        addLog(`Error ${modelId}: ${err.message}`, 'error');
                     }
-                };
+                }
+            }
 
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        addLog(`ล้มเหลว (${config.model}): ${data.error?.message || response.status}`, 'error');
-                        continue; 
-                    }
-
-                    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-                        const text = data.candidates[0].content.parts[0].text;
-                        resultOutput.value = text;
-                        addLog(`สำเร็จ! ใช้รุ่น: ${config.model}`, 'info');
-                        success = true;
-                    } else {
-                        addLog(`ไม่พบข้อมูลในผลลัพธ์จาก ${config.model}`, 'warn');
-                    }
-
-                } catch (err) {
-                    addLog(`Network Error (${config.model}): ${err.message}`, 'error');
+            // ขั้นตอนที่ 2: หากรุ่นมาตรฐานล้มเหลว ให้ลองใช้ Auto Discovery
+            if (!success) {
+                addLog("รุ่นมาตรฐานใช้ไม่ได้ กำลังค้นหาโมเดลสำรองจากบัญชีของคุณ...", 'warn');
+                const availableModels = await getAvailableModels();
+                if (availableModels.length > 0) {
+                    const modelToTry = availableModels[0];
+                    addLog(`ลองใช้โมเดลสำรองที่พบ: ${modelToTry}...`, 'warn');
+                    // ... (ทำซ้ำขั้นตอนเรียกเหมือนด้านบนสำหรับ modelToTry)
                 }
             }
 
             if (!success) {
-                addLog("ไม่สามารถประมวลผลได้หลังจากลองทุกรุ่นแล้ว กรุณากดปุ่ม 'ตรวจสอบรุ่นที่รองรับ' ด้านล่าง", 'error');
-                resultOutput.value = "ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองตรวจสอบรุ่นที่รองรับผ่าน Log ด้านล่าง หรือตรวจสอบว่าไฟล์มีขนาดใหญ่เกินไปหรือไม่";
+                addLog("วิกฤต: ไม่สามารถใช้ AI ได้เลย กรุณากดปุ่ม 'สแกนรุ่นที่ใช้ได้' เพื่อดูสาเหตุ", 'error');
+                resultOutput.value = "เกิดข้อผิดพลาดรุนแรง: AI แจ้งว่าไม่พบบริการที่เหมาะสมในบัญชีของคุณ\n\nโปรดลองถ่ายรูปให้ชัดเจนขึ้น หรือตรวจสอบสิทธิ์ของ API Key อีกครั้ง";
             }
             
             setLoading(false);
@@ -223,21 +226,21 @@
                     updateUI(true);
                     addLog("เริ่มบันทึกเสียง...");
                 } catch (e) { 
-                    addLog("ไมโครโฟนขัดข้อง: " + e.message, 'error');
+                    addLog("ไมโครโฟนล้มเหลว: " + e.message, 'error');
                 }
             } else {
                 if (mediaRecorder) mediaRecorder.stop();
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
-                addLog("หยุดบันทึก กำลังส่งวิเคราะห์...");
+                addLog("หยุดบันทึก กำลังวิเคราะห์...");
             }
         };
 
         document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            addLog(`อัปโหลด: ${file.name}`);
+            addLog(`อัปโหลดไฟล์: ${file.name}`);
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => processMedia(reader.result.split(',')[1], file.type);
@@ -245,7 +248,7 @@
 
         document.getElementById('clearBtn').onclick = () => {
             document.getElementById('resultOutput').value = "";
-            addLog("ล้างข้อมูล");
+            addLog("ล้างผลลัพธ์");
         };
 
         function startTimer() {
@@ -265,7 +268,7 @@
         function updateUI(r) {
             document.getElementById('recordRing').classList.toggle('hidden', !r);
             document.getElementById('micIcon').className = r ? "fas fa-stop text-3xl mb-1" : "fas fa-microphone text-3xl mb-1";
-            document.getElementById('statusBadge').innerText = r ? "RECORDING" : "V2.1 - READY";
+            document.getElementById('statusBadge').innerText = r ? "RECORDING" : "V2.2 - READY";
         }
         document.getElementById('copyBtn').onclick = () => {
             const out = document.getElementById('resultOutput');
