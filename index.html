@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Multi-Converter (Universal Fix)</title>
+    <title>AI Smart Multi-Converter (Stable V2.0)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -19,18 +19,18 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
 
-    <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
+    <header class="bg-indigo-700 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <i class="fas fa-microchip"></i> AI Smart Convert
             </h1>
-            <div id="statusBadge" class="text-[10px] bg-white/20 px-2 py-1 rounded-full border border-white/30 uppercase tracking-widest font-bold">READY</div>
+            <div id="statusBadge" class="text-[10px] bg-green-500 px-2 py-1 rounded-full border border-white/30 uppercase tracking-widest font-bold">STABLE V2.0</div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-2xl">
-        <!-- ส่วนรับข้อมูล (Input Section) -->
-        <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-indigo-50 text-center mb-6">
+        <!-- Input Section -->
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-indigo-50 text-center mb-6">
             <div class="flex flex-col items-center gap-6">
                 <div class="relative">
                     <div id="recordRing" class="absolute -inset-3 bg-rose-100 rounded-full hidden"></div>
@@ -46,18 +46,18 @@
                     <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,audio/*">
                 </div>
             </div>
-            <p id="instructionText" class="mt-4 text-[10px] text-slate-400 font-semibold uppercase">แตะเพื่อบันทึกเสียง หรือเลือกรูปภาพ/PDF</p>
+            <p class="mt-4 text-[10px] text-slate-400 font-semibold uppercase tracking-widest italic">รองรับรูปถ่ายตาราง, PDF และเสียงพูด</p>
         </div>
 
-        <!-- ส่วนแสดงผล (Result Section) -->
-        <div class="bg-white rounded-[2rem] shadow-2xl border border-indigo-50 overflow-hidden mb-6">
+        <!-- Result Section -->
+        <div class="bg-white rounded-[2.5rem] shadow-2xl border border-indigo-50 overflow-hidden mb-6">
             <div class="flex justify-between items-center p-5 border-b border-slate-50">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <i class="fas fa-file-invoice"></i> ผลลัพธ์ที่ถอดได้
                 </h3>
                 <div class="flex gap-2">
-                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full">คัดลอก</button>
-                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full">ล้าง</button>
+                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">คัดลอก</button>
+                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition-colors">ล้าง</button>
                 </div>
             </div>
 
@@ -69,20 +69,20 @@
             <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono custom-scrollbar" placeholder="ผลลัพธ์จะปรากฏที่นี่..."></textarea>
         </div>
 
-        <!-- ส่วนบันทึกการทำงาน (Debug Log) -->
-        <div class="bg-slate-800 rounded-2xl p-4 shadow-inner">
-            <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between">
-                <span><i class="fas fa-terminal mr-1"></i> ระบบตรวจสอบ (Debug Log)</span>
-                <button onclick="document.getElementById('debugLog').innerHTML = ''" class="text-[9px] text-slate-600 hover:text-slate-400">CLEAR LOG</button>
+        <!-- Debug Log -->
+        <div class="bg-slate-900 rounded-2xl p-4 shadow-inner">
+            <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between items-center">
+                <span><i class="fas fa-terminal mr-1"></i> ระบบตรวจสอบ (Debug Log V2.0)</span>
+                <span class="text-[8px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">STABLE MODE</span>
             </h4>
             <div id="debugLog" class="text-[10px] text-green-400 font-mono h-40 overflow-y-auto custom-scrollbar leading-relaxed">
-                > ระบบพร้อมทำงาน... กรุณาเลือกไฟล์
+                > ระบบเสถียรพร้อมทำงาน... กรุณาเลือกไฟล์
             </div>
         </div>
     </main>
 
     <script>
-        // ใส่ API Key ที่คุณได้รับมา
+        // API Key ที่ยืนยันแล้ว
         const apiKey = "AIzaSyBwybJiW4sSuU9n_3PR7eVnur_qoHJL-8Q"; 
 
         let mediaRecorder;
@@ -97,7 +97,7 @@
             if(type === 'error') color = 'text-rose-400 font-bold';
             if(type === 'warn') color = 'text-amber-400';
             
-            logDiv.innerHTML += `<div class="${color}">[${time}] ${msg}</div>`;
+            logDiv.innerHTML += `<div><span class="opacity-50 text-[8px]">[${time}]</span> <span class="${color}">${msg}</span></div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -107,13 +107,13 @@
             
             setLoading(true);
             resultOutput.value = "";
-            addLog(`เตรียมไฟล์: ${mimeType} (${Math.round(base64Data.length/1024)}KB)`);
+            addLog(`รับไฟล์ใหม่: ${mimeType} (${Math.round(base64Data.length/1024)}KB)`);
             
-            // รายการรุ่นและเวอร์ชันที่จะทดสอบเรียก (Fallback Logic)
+            // ใช้โครงสร้าง Config ที่เน้น v1 เป็นหลักเพื่อความเสถียร
             const configs = [
-                { version: 'v1beta', model: 'gemini-1.5-flash' },
                 { version: 'v1', model: 'gemini-1.5-flash' },
-                { version: 'v1beta', model: 'gemini-1.5-pro' }
+                { version: 'v1beta', model: 'gemini-1.5-flash' },
+                { version: 'v1', model: 'gemini-1.5-pro' }
             ];
 
             let success = false;
@@ -121,7 +121,7 @@
             for (const config of configs) {
                 if (success) break;
                 
-                addLog(`กำลังลอง: ${config.model} (${config.version})...`, 'warn');
+                addLog(`กำลังเรียกใช้ AI (${config.model} - ${config.version})...`, 'warn');
                 loadingText.innerText = `กำลังประมวลผลด้วย ${config.model}...`;
 
                 const url = `https://generativelanguage.googleapis.com/${config.version}/models/${config.model}:generateContent?key=${apiKey}`;
@@ -129,7 +129,7 @@
                 const payload = {
                     contents: [{ 
                         parts: [
-                            { text: "จงสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
+                            { text: "ดำเนินการสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
                             { inlineData: { mimeType: mimeType, data: base64Data } }
                         ] 
                     }]
@@ -146,32 +146,32 @@
 
                     if (!response.ok) {
                         addLog(`ล้มเหลว (${config.version}): ${data.error?.message || response.status}`, 'error');
-                        continue; // ลอง config ถัดไป
+                        continue; 
                     }
 
                     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
                         const text = data.candidates[0].content.parts[0].text;
                         resultOutput.value = text;
-                        addLog(`สำเร็จ! ใช้โมเดล: ${config.model} (${config.version})`);
+                        addLog(`สำเร็จ! ประมวลผลเสร็จสิ้นด้วย ${config.model}`, 'info');
                         success = true;
                     } else {
-                        addLog(`ไม่มีข้อมูลส่งกลับจาก ${config.model}`, 'warn');
+                        addLog(`AI ไม่พบข้อมูลในไฟล์ (${config.model})`, 'warn');
                     }
 
                 } catch (err) {
-                    addLog(`Network Error: ${err.message}`, 'error');
+                    addLog(`Network Error (${config.model}): ${err.message}`, 'error');
                 }
             }
 
             if (!success) {
-                addLog("ไม่สามารถประมวลผลได้หลังจากลองทุกช่องทางแล้ว", 'error');
-                resultOutput.value = "ไม่สามารถเชื่อมต่อ AI ได้ กรุณาตรวจสอบ API Key หรือลองใหม่อีกครั้ง";
+                addLog("ไม่สามารถเชื่อมต่อ AI ได้หลังจากลองทุกช่องทางแล้ว", 'error');
+                resultOutput.value = "เกิดข้อผิดพลาด: ระบบไม่สามารถเชื่อมต่อ AI ได้ในขณะนี้\n\nสาเหตุที่เป็นไปได้:\n1. API Key อาจยังไม่เปิดใช้งาน (ใช้เวลา 5-10 นาทีหลังจากสร้างครั้งแรก)\n2. พื้นที่การเชื่อมต่ออินเทอร์เน็ตอาจถูกจำกัด\n3. ประเภทไฟล์ไม่ได้รับการสนับสนุน";
             }
             
             setLoading(false);
         }
 
-        // --- ส่วนควบคุมอุปกรณ์ (Hardware Control) ---
+        // --- ส่วนควบคุมอุปกรณ์ ---
         const recordBtn = document.getElementById('recordBtn');
         recordBtn.onclick = async () => {
             if (!isRecording) {
@@ -190,16 +190,16 @@
                     startTimer();
                     isRecording = true;
                     updateUI(true);
-                    addLog("กำลังบันทึกเสียง...");
+                    addLog("เริ่มบันทึกเสียงสด...");
                 } catch (e) { 
-                    addLog("ไมโครโฟนขัดข้อง: " + e.message, 'error');
+                    addLog("ไม่สามารถเข้าถึงไมโครโฟน: " + e.message, 'error');
                 }
             } else {
-                mediaRecorder.stop();
+                if (mediaRecorder) mediaRecorder.stop();
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
-                addLog("หยุดบันทึก กำลังส่งข้อมูล...");
+                addLog("หยุดบันทึก กำลังวิเคราะห์เสียง...");
             }
         };
 
@@ -214,7 +214,7 @@
 
         document.getElementById('clearBtn').onclick = () => {
             document.getElementById('resultOutput').value = "";
-            addLog("ล้างข้อมูลหน้าจอ");
+            addLog("ล้างข้อมูลหน้าจอสำเร็จ");
         };
 
         function startTimer() {
@@ -234,14 +234,14 @@
         function updateUI(r) {
             document.getElementById('recordRing').classList.toggle('hidden', !r);
             document.getElementById('micIcon').className = r ? "fas fa-stop text-3xl mb-1" : "fas fa-microphone text-3xl mb-1";
-            document.getElementById('statusBadge').innerText = r ? "RECORDING" : "READY";
+            document.getElementById('statusBadge').innerText = r ? "RECORDING" : "STABLE V2.0";
         }
         document.getElementById('copyBtn').onclick = () => {
             const out = document.getElementById('resultOutput');
             if(!out.value) return;
             out.select();
             document.execCommand('copy');
-            addLog("คัดลอกข้อความแล้ว");
+            addLog("คัดลอกข้อความลงคลิปบอร์ดแล้ว");
         };
     </script>
 </body>
