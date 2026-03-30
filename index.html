@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Multi-Converter (V2.4 - Ultimate Bypass)</title>
+    <title>AI Smart Multi-Converter (V2.6 - New Project Key)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -19,17 +19,17 @@
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
 
-    <header class="bg-indigo-700 text-white p-4 shadow-md sticky top-0 z-50">
+    <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <i class="fas fa-microchip"></i> AI Smart Convert
             </h1>
-            <div id="statusBadge" class="text-[10px] bg-green-500 px-2 py-1 rounded-full border border-white/30 uppercase tracking-widest font-bold">V2.4 - ULTIMATE</div>
+            <div id="statusBadge" class="text-[10px] bg-white/20 px-2 py-1 rounded-full border border-white/30 uppercase tracking-widest font-bold">V2.6 - NEW KEY</div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-2xl">
-        <!-- Main Controls -->
+        <!-- Input Section -->
         <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-indigo-50 text-center mb-6">
             <div class="flex flex-col items-center gap-6">
                 <div class="relative">
@@ -46,46 +46,43 @@
                     <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,audio/*">
                 </div>
             </div>
-            <p class="mt-4 text-[10px] text-slate-400 font-semibold uppercase tracking-widest italic">ถอดความเสียงและสแกนตาราง (PDF Support)</p>
+            <p class="mt-4 text-[10px] text-slate-400 font-semibold uppercase tracking-widest italic">รองรับรูปถ่ายตาราง, PDF และเสียงพูด</p>
         </div>
 
-        <!-- Result Area -->
+        <!-- Result Section -->
         <div class="bg-white rounded-[2.5rem] shadow-2xl border border-indigo-50 overflow-hidden mb-6">
             <div class="flex justify-between items-center p-5 border-b border-slate-50">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fas fa-file-invoice"></i> ข้อความที่สกัดได้
+                    <i class="fas fa-file-invoice"></i> ผลลัพธ์ที่ถอดได้
                 </h3>
                 <div class="flex gap-2">
-                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full">คัดลอก</button>
-                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full">ล้าง</button>
+                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full hover:bg-indigo-100">คัดลอก</button>
+                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200">ล้าง</button>
                 </div>
             </div>
 
             <div id="loadingOverlay" class="hidden p-12 text-center">
                 <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"></div>
-                <p id="loadingText" class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังประมวลผลไฟล์...</p>
+                <p id="loadingText" class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังวิเคราะห์ข้อมูล...</p>
             </div>
 
             <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono custom-scrollbar" placeholder="ผลลัพธ์จะปรากฏที่นี่..."></textarea>
         </div>
 
-        <!-- Advanced Debug Log -->
+        <!-- Debug Log Section -->
         <div class="bg-slate-900 rounded-2xl p-4 shadow-inner">
-            <div class="flex justify-between items-center mb-2 border-b border-slate-800 pb-2">
-                <h4 class="text-[10px] font-bold text-slate-500 uppercase flex items-center">
-                    <i class="fas fa-terminal mr-2"></i> ระบบวิเคราะห์เชิงลึก (Ultimate Log V2.4)
-                </h4>
-                <button onclick="document.getElementById('debugLog').innerHTML = ''" class="text-[9px] text-slate-600 hover:text-slate-400">ล้างประวัติ</button>
-            </div>
-            <div id="debugLog" class="text-[10px] text-green-400 font-mono h-48 overflow-y-auto custom-scrollbar leading-relaxed">
-                > ระบบพร้อมทดสอบ... กรุณาเลือกไฟล์เพื่อประมวลผล
+            <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center">
+                <i class="fas fa-terminal mr-2"></i> ระบบตรวจสอบ (Log V2.6)
+            </h4>
+            <div id="debugLog" class="text-[10px] text-green-400 font-mono h-40 overflow-y-auto custom-scrollbar leading-relaxed">
+                > ระบบพร้อมทดสอบด้วย Key ใหม่... กรุณาเลือกไฟล์
             </div>
         </div>
     </main>
 
     <script>
-        // API Key ของคุณ (ตรวจสอบแล้วว่าถูกต้องตามหน้าจอ AI Studio)
-        const apiKey = "AIzaSyBwybJiW4sSuU9n_3PR7eVnur_qoHJL-8Q"; 
+        // ใช้ Key ใหม่จากโปรเจกต์ใหม่ที่คุณสร้าง
+        const apiKey = "AIzaSyADlcSoC3JsdTCkEJ59DQkrsz38snFCT3E"; 
 
         let mediaRecorder;
         let audioChunks = [];
@@ -98,7 +95,6 @@
             let color = 'text-green-400';
             if(type === 'error') color = 'text-rose-400 font-bold';
             if(type === 'warn') color = 'text-amber-400';
-            if(type === 'raw') color = 'text-indigo-300 italic';
             
             logDiv.innerHTML += `<div><span class="opacity-30 text-[8px]">[${time}]</span> <span class="${color}">${msg}</span></div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
@@ -110,64 +106,64 @@
             
             setLoading(true);
             resultOutput.value = "";
-            addLog(`รับข้อมูลไฟล์: ${mimeType} (${Math.round(base64Data.length/1024)} KB)`);
+            addLog(`รับข้อมูลไฟล์: ${mimeType}`);
 
-            // บังคับใช้รุ่นมาตรฐานที่ได้รับความนิยมสูงสุด
-            const modelsToTry = [
-                { id: 'gemini-1.5-flash', ver: 'v1' },
-                { id: 'gemini-1.5-flash', ver: 'v1beta' },
-                { id: 'gemini-2.0-flash-exp', ver: 'v1beta' }
+            // ลำดับการเรียกใช้งานแบบยืดหยุ่น (Fallback Strategy)
+            const configs = [
+                { ver: 'v1beta', model: 'gemini-1.5-flash' },
+                { ver: 'v1', model: 'gemini-1.5-flash' },
+                { ver: 'v1beta', model: 'gemini-1.5-flash-latest' },
+                { ver: 'v1beta', model: 'gemini-1.5-pro' }
             ];
 
             let success = false;
 
-            for (const config of modelsToTry) {
+            for (const config of configs) {
                 if (success) break;
-                
-                addLog(`กำลังบังคับส่งข้อมูลไปยัง: ${config.id} (${config.ver})...`, 'warn');
-                loadingText.innerText = `พยายามเชื่อมต่อ ${config.id}...`;
 
-                const url = `https://generativelanguage.googleapis.com/${config.ver}/models/${config.id}:generateContent?key=${apiKey}`;
-                
+                addLog(`กำลังลองเรียก AI (${config.model} - ${config.ver})...`, 'warn');
+                loadingText.innerText = `กำลังประมวลผลด้วย ${config.model}...`;
+
+                const url = `https://generativelanguage.googleapis.com/${config.ver}/models/${config.model}:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ 
+                        parts: [
+                            { text: "จงสกัดข้อความทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
+                            { inlineData: { mimeType: mimeType, data: base64Data } }
+                        ] 
+                    }],
+                    generationConfig: {
+                        temperature: 0.1,
+                        topP: 0.95
+                    }
+                };
+
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ 
-                                parts: [
-                                    { text: "จงสกัดข้อความทั้งหมดจากไฟล์นี้อย่างละเอียดที่สุด หากเป็นรูปภาพตารางให้ใช้รูปแบบ Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ ห้ามเขียนคำนำ ห้ามเขียนคำอธิบายเพิ่มเติม" },
-                                    { inlineData: { mimeType: mimeType, data: base64Data } }
-                                ] 
-                            }]
-                        })
+                        body: JSON.stringify(payload)
                     });
 
                     const data = await response.json();
 
-                    if (response.ok) {
-                        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-                            resultOutput.value = data.candidates[0].content.parts[0].text;
-                            addLog(`ประมวลผลสำเร็จ! ผ่านรุ่น: ${config.id}`, 'info');
-                            success = true;
-                        } else {
-                            addLog(`คำเตือน: AI ตอบกลับมาแต่ไม่มีเนื้อหา (FinishReason: ${data.candidates?.[0]?.finishReason})`, 'warn');
-                        }
+                    if (response.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                        resultOutput.value = data.candidates[0].content.parts[0].text;
+                        addLog(`ประมวลผลสำเร็จด้วย ${config.model}!`, "info");
+                        success = true;
                     } else {
-                        // แสดง Raw Error เพื่อให้คุณนำมาแจ้งผมได้
-                        const errorMsg = data.error?.message || "ไม่ระบุสาเหตุ";
-                        const errorCode = data.error?.status || "UNKNOWN_CODE";
-                        addLog(`ล้มเหลว (${config.id}): [${errorCode}] ${errorMsg}`, 'error');
-                        if (data.error) addLog(`Raw JSON: ${JSON.stringify(data.error)}`, 'raw');
+                        const errorMsg = data.error?.message || "ไม่พบข้อมูลในผลลัพธ์";
+                        addLog(`ล้มเหลว (${config.model}): ${errorMsg}`, "warn");
                     }
                 } catch (err) {
-                    addLog(`Network Error: ${err.message}`, 'error');
+                    addLog(`Network Error (${config.model}): ${err.message}`, "warn");
                 }
             }
 
             if (!success) {
-                addLog("วิกฤต: ไม่สามารถเรียกใช้งาน AI ได้ทุกรุ่นที่มี", 'error');
-                resultOutput.value = "ระบบขัดข้อง: AI ไม่ตอบสนองต่อคำขอ\n\nโปรดตรวจสอบ Log ด้านล่าง และส่งข้อความสีแดง (Raw JSON) กลับมาให้ผมเพื่อวิเคราะห์ต่อครับ";
+                addLog("ไม่สามารถประมวลผลได้หลังจากลองทุกรุ่นแล้ว", "error");
+                resultOutput.value = "เกิดข้อผิดพลาด: AI ไม่สามารถประมวลผลไฟล์นี้ได้ในขณะนี้ โปรดตรวจสอบว่า API Key ใหม่เปิดใช้งาน Generative Language API แล้วหรือยัง";
             }
             
             setLoading(false);
@@ -194,21 +190,21 @@
                     updateUI(true);
                     addLog("เริ่มบันทึกเสียง...");
                 } catch (e) { 
-                    addLog("ไม่สามารถเข้าถึงไมโครโฟน: " + e.message, 'error');
+                    addLog("ไมโครโฟนขัดข้อง: " + e.message, 'error');
                 }
             } else {
                 if (mediaRecorder) mediaRecorder.stop();
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
-                addLog("หยุดบันทึก ส่งข้อมูลวิเคราะห์...");
+                addLog("หยุดบันทึก กำลังส่งวิเคราะห์...");
             }
         };
 
         document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            addLog(`อัปโหลด: ${file.name}`);
+            addLog(`เลือกไฟล์: ${file.name}`);
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => processMedia(reader.result.split(',')[1], file.type);
@@ -216,7 +212,7 @@
 
         document.getElementById('clearBtn').onclick = () => {
             document.getElementById('resultOutput').value = "";
-            addLog("ล้างข้อมูล");
+            addLog("ล้างหน้าจอสำเร็จ");
         };
 
         function startTimer() {
@@ -236,14 +232,14 @@
         function updateUI(r) {
             document.getElementById('recordRing').classList.toggle('hidden', !r);
             document.getElementById('micIcon').className = r ? "fas fa-stop text-3xl mb-1" : "fas fa-microphone text-3xl mb-1";
-            document.getElementById('statusBadge').innerText = r ? "RECORDING" : "V2.4 - READY";
+            document.getElementById('statusBadge').innerText = r ? "RECORDING" : "V2.6 - READY";
         }
         document.getElementById('copyBtn').onclick = () => {
             const out = document.getElementById('resultOutput');
             if(!out.value) return;
             out.select();
             document.execCommand('copy');
-            addLog("คัดลอกลงคลิปบอร์ด");
+            alert("คัดลอกลงคลิปบอร์ดแล้ว");
         };
     </script>
 </body>
