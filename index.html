@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Multi-Converter (Debug Mode)</title>
+    <title>AI Smart Multi-Converter (Stable Version)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -12,6 +12,9 @@
         .mono { font-family: 'Fira Code', monospace; }
         .recording-pulse { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
@@ -60,20 +63,19 @@
 
             <div id="loadingOverlay" class="hidden p-12 text-center">
                 <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"></div>
-                <p class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังวิเคราะห์ข้อมูล...</p>
+                <p id="loadingText" class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังวิเคราะห์ข้อมูล...</p>
             </div>
 
             <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono" placeholder="ผลลัพธ์จะแสดงที่นี่..."></textarea>
         </div>
 
-        <!-- Debug Log Section (New!) -->
+        <!-- Debug Log Section -->
         <div class="bg-slate-800 rounded-2xl p-4 shadow-inner">
             <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between">
-                <span><i class="fas fa-terminal mr-1"></i> Debug Log</span>
-                <span id="logTime" class="opacity-50"></span>
+                <span><i class="fas fa-terminal mr-1"></i> บันทึกการทำงาน (Debug Log)</span>
             </h4>
             <div id="debugLog" class="text-[10px] text-green-400 font-mono h-32 overflow-y-auto custom-scrollbar leading-relaxed">
-                > ระบบพร้อมทำงาน... กรุณาเลือกไฟล์
+                > ระบบเสถียรพร้อมทำงาน... กรุณาเลือกไฟล์
             </div>
         </div>
     </main>
@@ -90,73 +92,75 @@
         function addLog(msg, type = 'info') {
             const logDiv = document.getElementById('debugLog');
             const time = new Date().toLocaleTimeString();
-            const color = type === 'error' ? 'text-rose-400' : 'text-green-400';
+            const color = type === 'error' ? 'text-rose-400 font-bold' : type === 'warn' ? 'text-amber-400' : 'text-green-400';
             logDiv.innerHTML += `<div class="${color}">[${time}] ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         async function processMedia(base64Data, mimeType) {
             const resultOutput = document.getElementById('resultOutput');
+            const loadingText = document.getElementById('loadingText');
             
             setLoading(true);
             resultOutput.value = "";
             addLog(`เริ่มการประมวลผล (Mime: ${mimeType}, Size: ${Math.round(base64Data.length/1024)}KB)`);
             
-            // ใช้ Model ล่าสุดที่เสถียร
-            const modelName = "gemini-1.5-flash";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            // ลำดับโมเดลที่จะพยายามเรียกใช้งาน (Fallback Strategy)
+            const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
+            let success = false;
 
-            const payload = {
-                contents: [{ 
-                    parts: [
-                        { text: "จงสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
-                        { inlineData: { mimeType: mimeType, data: base64Data } }
-                    ] 
-                }],
-                generationConfig: {
-                    temperature: 0.1,
-                    topP: 0.95,
-                    maxOutputTokens: 8192,
-                },
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-                ]
-            };
+            for (const modelName of models) {
+                if (success) break;
+                
+                addLog(`กำลังทดลองใช้โมเดล: ${modelName}...`);
+                loadingText.innerText = `กำลังวิเคราะห์ด้วย ${modelName}...`;
 
-            try {
-                addLog("กำลังส่งคำขอไปยัง Google API...");
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                // เปลี่ยนมาใช้ API v1 เพื่อความเสถียร
+                const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
 
-                const data = await response.json();
+                const payload = {
+                    contents: [{ 
+                        parts: [
+                            { text: "จงสกัดข้อมูลทั้งหมดจากไฟล์ที่แนบมานี้อย่างละเอียดที่สุด หากเป็นรูปภาพที่มีตาราง ให้จัดรูปแบบเป็น Markdown Table หากเป็นเสียงให้ถอดความเป็นภาษาไทย ห้ามสรุปความ และห้ามใส่คำอธิบายเพิ่มเติมอื่นใดนอกจากเนื้อหาที่สกัดได้" },
+                            { inlineData: { mimeType: mimeType, data: base64Data } }
+                        ] 
+                    }]
+                };
 
-                if (!response.ok) {
-                    addLog(`API ตอบกลับด้วย Error: ${data.error?.message || response.status}`, 'error');
-                    throw new Error(data.error?.message || `HTTP Error ${response.status}`);
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        addLog(`โมเดล ${modelName} ไม่ตอบสนอง: ${data.error?.message || response.status}`, 'warn');
+                        continue; // ลองโมเดลถัดไป
+                    }
+
+                    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                        const text = data.candidates[0].content.parts[0].text;
+                        resultOutput.value = text;
+                        addLog(`ประมวลผลสำเร็จด้วยโมเดล ${modelName}!`);
+                        success = true;
+                    } else {
+                        addLog(`โมเดล ${modelName} ส่งค่าว่างกลับมา`, 'warn');
+                    }
+
+                } catch (err) {
+                    addLog(`ข้อผิดพลาดทางเทคนิค (${modelName}): ${err.message}`, 'warn');
                 }
-
-                if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-                    const text = data.candidates[0].content.parts[0].text;
-                    resultOutput.value = text;
-                    addLog("ประมวลผลสำเร็จ! พบข้อความ " + text.length + " ตัวอักษร");
-                } else {
-                    const reason = data.candidates?.[0]?.finishReason || "UNKNOWN";
-                    addLog(`AI ไม่ส่งข้อความกลับมา (FinishReason: ${reason})`, 'error');
-                    resultOutput.value = "AI ประมวลผลสำเร็จแต่ไม่มีข้อความส่งกลับมา (Reason: " + reason + ")";
-                }
-
-            } catch (err) {
-                addLog(`ข้อผิดพลาด: ${err.message}`, 'error');
-                resultOutput.value = "เกิดข้อผิดพลาด: " + err.message;
-            } finally {
-                setLoading(false);
             }
+
+            if (!success) {
+                addLog("ไม่สามารถประมวลผลได้ด้วยโมเดลที่มีอยู่ทั้งหมด กรุณาตรวจสอบ API Key หรือ Region", 'error');
+                resultOutput.value = "เกิดข้อผิดพลาด: ไม่สามารถเรียกใช้งาน AI ได้ในขณะนี้ โปรดตรวจสอบการตั้งค่า API Key หรือประเภทไฟล์";
+            }
+            
+            setLoading(false);
         }
 
         // --- ระบบควบคุมเสียงและไฟล์ ---
@@ -187,7 +191,7 @@
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
-                addLog("หยุดบันทึกเสียง ส่งไปประมวลผล...");
+                addLog("หยุดบันทึกเสียง กำลังส่งไปประมวลผล...");
             }
         };
 
