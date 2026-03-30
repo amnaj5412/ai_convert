@@ -53,7 +53,8 @@
                     <i class="fas fa-file-invoice"></i> ผลลัพธ์ที่ถอดได้
                 </h3>
                 <div class="flex gap-2">
-                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full">คัดลอก</button>
+                    <button id="copyBtn" class="text-indigo-600 text-[10px] font-bold bg-indigo-50 px-3 py-1.5 rounded-full active:scale-90 transition-transform">คัดลอก</button>
+                    <button id="clearBtn" class="text-slate-400 text-[10px] font-bold bg-slate-100 px-3 py-1.5 rounded-full active:scale-90 transition-transform">ล้าง</button>
                 </div>
             </div>
 
@@ -82,25 +83,34 @@
         let timerInterval;
 
         async function processMedia(base64Data, mimeType) {
-            if (!apiKey || apiKey.includes("ใส่คีย์")) {
-                showError("ยังไม่ได้ใส่ API Key ในโค้ด");
+            const errorDisplay = document.getElementById('errorDisplay');
+            const resultOutput = document.getElementById('resultOutput');
+            
+            if (!apiKey || apiKey.length < 10) {
+                showError("API Key ไม่ถูกต้องหรือยังไม่ได้ระบุ");
                 return;
             }
 
             setLoading(true);
-            document.getElementById('errorDisplay').classList.add('hidden');
+            errorDisplay.classList.add('hidden');
+            resultOutput.value = "";
             
-            // ใช้โมเดลมาตรฐาน gemini-1.5-flash สำหรับคีย์ภายนอก
             const modelName = "gemini-1.5-flash";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [{ 
                     parts: [
-                        { text: "สกัดข้อมูลจากไฟล์นี้: หากเป็นภาพตารางให้ใช้รูปแบบ Markdown Table, หากเป็นเสียงให้ถอดความเป็นไทย, ห้ามสรุปความ" },
+                        { text: "สกัดข้อมูลจากไฟล์ที่แนบมา: หากเป็นรูปภาพตารางให้ถอดข้อมูลออกมาเป็น Markdown Table อย่างแม่นยำ, หากเป็นเสียงพูดให้ถอดความเป็นข้อความภาษาไทย, หากเป็นเอกสารทั่วไปให้สกัดข้อความทั้งหมด ห้ามสรุปความ" },
                         { inlineData: { mimeType: mimeType, data: base64Data } }
                     ] 
-                }]
+                }],
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                ]
             };
 
             try {
@@ -116,13 +126,17 @@
                     throw new Error(data.error?.message || `HTTP Error ${response.status}`);
                 }
 
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!text) throw new Error("AI ตอบกลับมาเป็นค่าว่าง (อาจเป็นเพราะภาพไม่ชัดหรือไฟล์ไม่รองรับ)");
+                // ตรวจสอบว่ามีข้อมูลกลับมาหรือไม่
+                if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                    resultOutput.value = data.candidates[0].content.parts[0].text;
+                } else {
+                    // กรณี AI ไม่สามารถสกัดข้อความได้ หรือโดนบล็อก
+                    throw new Error("AI ประมวลผลสำเร็จแต่ไม่มีข้อความส่งกลับมา (อาจเกิดจากไฟล์ไม่ชัดเจนหรือระบบความปลอดภัยบล็อกเนื้อหา)");
+                }
 
-                document.getElementById('resultOutput').value = text;
             } catch (err) {
-                showError(`[API Error] ${err.message}`);
-                console.error(err);
+                showError(`[พบข้อผิดพลาด] ${err.message}`);
+                console.error("Full API Error:", err);
             } finally {
                 setLoading(false);
             }
@@ -147,9 +161,9 @@
                     startTimer();
                     isRecording = true;
                     updateUI(true);
-                } catch (e) { showError("ไม่สามารถเข้าถึงไมโครโฟนได้"); }
+                } catch (e) { showError("ไม่สามารถเข้าถึงไมโครโฟนได้: โปรดตรวจสอบว่าเว็บรองรับ HTTPS"); }
             } else {
-                mediaRecorder.stop();
+                if(mediaRecorder) mediaRecorder.stop();
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
@@ -162,6 +176,11 @@
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => processMedia(reader.result.split(',')[1], file.type);
+        };
+
+        document.getElementById('clearBtn').onclick = () => {
+            document.getElementById('resultOutput').value = "";
+            document.getElementById('errorDisplay').classList.add('hidden');
         };
 
         function startTimer() {
@@ -190,9 +209,10 @@
         }
         document.getElementById('copyBtn').onclick = () => {
             const out = document.getElementById('resultOutput');
+            if(!out.value) return;
             out.select();
             document.execCommand('copy');
-            alert("คัดลอกแล้ว");
+            alert("คัดลอกลงคลิปบอร์ดแล้ว");
         };
     </script>
 </body>
