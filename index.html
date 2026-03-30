@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Smart Multi-Converter (Stable Version)</title>
+    <title>AI Smart Multi-Converter (Universal Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -29,7 +29,7 @@
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-2xl">
-        <!-- Input Section -->
+        <!-- ส่วนรับข้อมูล (Input Section) -->
         <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-indigo-50 text-center mb-6">
             <div class="flex flex-col items-center gap-6">
                 <div class="relative">
@@ -46,10 +46,10 @@
                     <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,audio/*">
                 </div>
             </div>
-            <p id="instructionText" class="mt-4 text-[10px] text-slate-400 font-semibold uppercase">แตะเพื่อเริ่มบันทึกเสียง หรือเลือกรูปตาราง</p>
+            <p id="instructionText" class="mt-4 text-[10px] text-slate-400 font-semibold uppercase">แตะเพื่อบันทึกเสียง หรือเลือกรูปภาพ/PDF</p>
         </div>
 
-        <!-- Result Section -->
+        <!-- ส่วนแสดงผล (Result Section) -->
         <div class="bg-white rounded-[2rem] shadow-2xl border border-indigo-50 overflow-hidden mb-6">
             <div class="flex justify-between items-center p-5 border-b border-slate-50">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -66,16 +66,17 @@
                 <p id="loadingText" class="text-indigo-600 text-sm font-bold animate-pulse">AI กำลังวิเคราะห์ข้อมูล...</p>
             </div>
 
-            <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono" placeholder="ผลลัพธ์จะแสดงที่นี่..."></textarea>
+            <textarea id="resultOutput" readonly class="w-full h-80 p-6 text-sm text-slate-700 bg-white border-none focus:ring-0 resize-none mono custom-scrollbar" placeholder="ผลลัพธ์จะปรากฏที่นี่..."></textarea>
         </div>
 
-        <!-- Debug Log Section -->
+        <!-- ส่วนบันทึกการทำงาน (Debug Log) -->
         <div class="bg-slate-800 rounded-2xl p-4 shadow-inner">
             <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between">
-                <span><i class="fas fa-terminal mr-1"></i> บันทึกการทำงาน (Debug Log)</span>
+                <span><i class="fas fa-terminal mr-1"></i> ระบบตรวจสอบ (Debug Log)</span>
+                <button onclick="document.getElementById('debugLog').innerHTML = ''" class="text-[9px] text-slate-600 hover:text-slate-400">CLEAR LOG</button>
             </h4>
-            <div id="debugLog" class="text-[10px] text-green-400 font-mono h-32 overflow-y-auto custom-scrollbar leading-relaxed">
-                > ระบบเสถียรพร้อมทำงาน... กรุณาเลือกไฟล์
+            <div id="debugLog" class="text-[10px] text-green-400 font-mono h-40 overflow-y-auto custom-scrollbar leading-relaxed">
+                > ระบบพร้อมทำงาน... กรุณาเลือกไฟล์
             </div>
         </div>
     </main>
@@ -92,7 +93,10 @@
         function addLog(msg, type = 'info') {
             const logDiv = document.getElementById('debugLog');
             const time = new Date().toLocaleTimeString();
-            const color = type === 'error' ? 'text-rose-400 font-bold' : type === 'warn' ? 'text-amber-400' : 'text-green-400';
+            let color = 'text-green-400';
+            if(type === 'error') color = 'text-rose-400 font-bold';
+            if(type === 'warn') color = 'text-amber-400';
+            
             logDiv.innerHTML += `<div class="${color}">[${time}] ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
         }
@@ -103,20 +107,24 @@
             
             setLoading(true);
             resultOutput.value = "";
-            addLog(`เริ่มการประมวลผล (Mime: ${mimeType}, Size: ${Math.round(base64Data.length/1024)}KB)`);
+            addLog(`เตรียมไฟล์: ${mimeType} (${Math.round(base64Data.length/1024)}KB)`);
             
-            // ลำดับโมเดลที่จะพยายามเรียกใช้งาน (Fallback Strategy)
-            const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
+            // รายการรุ่นและเวอร์ชันที่จะทดสอบเรียก (Fallback Logic)
+            const configs = [
+                { version: 'v1beta', model: 'gemini-1.5-flash' },
+                { version: 'v1', model: 'gemini-1.5-flash' },
+                { version: 'v1beta', model: 'gemini-1.5-pro' }
+            ];
+
             let success = false;
 
-            for (const modelName of models) {
+            for (const config of configs) {
                 if (success) break;
                 
-                addLog(`กำลังทดลองใช้โมเดล: ${modelName}...`);
-                loadingText.innerText = `กำลังวิเคราะห์ด้วย ${modelName}...`;
+                addLog(`กำลังลอง: ${config.model} (${config.version})...`, 'warn');
+                loadingText.innerText = `กำลังประมวลผลด้วย ${config.model}...`;
 
-                // เปลี่ยนมาใช้ API v1 เพื่อความเสถียร
-                const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/${config.version}/models/${config.model}:generateContent?key=${apiKey}`;
 
                 const payload = {
                     contents: [{ 
@@ -137,33 +145,33 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        addLog(`โมเดล ${modelName} ไม่ตอบสนอง: ${data.error?.message || response.status}`, 'warn');
-                        continue; // ลองโมเดลถัดไป
+                        addLog(`ล้มเหลว (${config.version}): ${data.error?.message || response.status}`, 'error');
+                        continue; // ลอง config ถัดไป
                     }
 
                     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
                         const text = data.candidates[0].content.parts[0].text;
                         resultOutput.value = text;
-                        addLog(`ประมวลผลสำเร็จด้วยโมเดล ${modelName}!`);
+                        addLog(`สำเร็จ! ใช้โมเดล: ${config.model} (${config.version})`);
                         success = true;
                     } else {
-                        addLog(`โมเดล ${modelName} ส่งค่าว่างกลับมา`, 'warn');
+                        addLog(`ไม่มีข้อมูลส่งกลับจาก ${config.model}`, 'warn');
                     }
 
                 } catch (err) {
-                    addLog(`ข้อผิดพลาดทางเทคนิค (${modelName}): ${err.message}`, 'warn');
+                    addLog(`Network Error: ${err.message}`, 'error');
                 }
             }
 
             if (!success) {
-                addLog("ไม่สามารถประมวลผลได้ด้วยโมเดลที่มีอยู่ทั้งหมด กรุณาตรวจสอบ API Key หรือ Region", 'error');
-                resultOutput.value = "เกิดข้อผิดพลาด: ไม่สามารถเรียกใช้งาน AI ได้ในขณะนี้ โปรดตรวจสอบการตั้งค่า API Key หรือประเภทไฟล์";
+                addLog("ไม่สามารถประมวลผลได้หลังจากลองทุกช่องทางแล้ว", 'error');
+                resultOutput.value = "ไม่สามารถเชื่อมต่อ AI ได้ กรุณาตรวจสอบ API Key หรือลองใหม่อีกครั้ง";
             }
             
             setLoading(false);
         }
 
-        // --- ระบบควบคุมเสียงและไฟล์ ---
+        // --- ส่วนควบคุมอุปกรณ์ (Hardware Control) ---
         const recordBtn = document.getElementById('recordBtn');
         recordBtn.onclick = async () => {
             if (!isRecording) {
@@ -182,23 +190,23 @@
                     startTimer();
                     isRecording = true;
                     updateUI(true);
-                    addLog("เริ่มบันทึกเสียง...");
+                    addLog("กำลังบันทึกเสียง...");
                 } catch (e) { 
-                    addLog("เข้าถึงไมโครโฟนไม่ได้: " + e.message, 'error');
+                    addLog("ไมโครโฟนขัดข้อง: " + e.message, 'error');
                 }
             } else {
                 mediaRecorder.stop();
                 stopTimer();
                 isRecording = false;
                 updateUI(false);
-                addLog("หยุดบันทึกเสียง กำลังส่งไปประมวลผล...");
+                addLog("หยุดบันทึก กำลังส่งข้อมูล...");
             }
         };
 
         document.getElementById('fileInput').onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            addLog(`เลือกไฟล์: ${file.name} (${file.type})`);
+            addLog(`เลือกไฟล์: ${file.name}`);
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => processMedia(reader.result.split(',')[1], file.type);
@@ -206,7 +214,7 @@
 
         document.getElementById('clearBtn').onclick = () => {
             document.getElementById('resultOutput').value = "";
-            addLog("ล้างหน้าจอผลลัพธ์");
+            addLog("ล้างข้อมูลหน้าจอ");
         };
 
         function startTimer() {
@@ -233,7 +241,7 @@
             if(!out.value) return;
             out.select();
             document.execCommand('copy');
-            addLog("คัดลอกข้อความลงคลิปบอร์ดแล้ว");
+            addLog("คัดลอกข้อความแล้ว");
         };
     </script>
 </body>
